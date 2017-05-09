@@ -1,10 +1,13 @@
 #include "Arduino.h"
 
-void avancer(int distance){
-
+void forward(int distance, int pin){
+	for (int i = 0; i < distance; ++i)
+	{
+		digitalWrite(pin, HIGH);
+	}
 }
 
-void reculer(int distance){
+void backward(int distance){
 
 }
 
