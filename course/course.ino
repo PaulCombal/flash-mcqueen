@@ -1,12 +1,21 @@
-#include <mouvement.h>
+//#include <mouvement.h>
+
+int motorPin = 13;
 
 void setup() {
-  // put your setup code here, to run once:
-  avancer(10);
+	Serial.begin(9600);
+	
+	pinMode(motorPin, OUTPUT);
 
+  Serial.write("OK");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+	// put your main code here, to run repeatedly:
+	//forward(10, motorPin);
+  digitalWrite(motorPin, HIGH);
+  delay(1000);
+  digitalWrite(motorPin, LOW);
+  delay(1000);
 }
+
