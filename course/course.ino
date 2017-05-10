@@ -1,21 +1,28 @@
 //#include <mouvement.h>
 
-int motorPin = 13;
+const int enablePin = 11; //pwm
+const int in1Pin = 13;
+const int in2Pin = 12;
+
+const bool motorDirection = true;
 
 void setup() {
 	Serial.begin(9600);
 	
-	pinMode(motorPin, OUTPUT);
+	pinMode(in1Pin, OUTPUT);
+  pinMode(in2Pin, OUTPUT);
+  pinMode(enablePin, OUTPUT);
 
   Serial.write("OK");
 }
 
 void loop() {
-	// put your main code here, to run repeatedly:
-	//forward(10, motorPin);
-  digitalWrite(motorPin, HIGH);
-  delay(1000);
-  digitalWrite(motorPin, LOW);
-  delay(1000);
+  forward(200);
+}
+
+void forward(int motorSpeed){
+  analogWrite(enablePin, motorSpeed);
+  digitalWrite(in1Pin, !motorDirection);
+  digitalWrite(in2Pin, motorDirection);
 }
 
