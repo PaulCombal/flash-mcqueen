@@ -20,12 +20,25 @@ const int rightSonarEcho = 6;
 long rightSonarRead;
 long rightSonarCm;
 
+//const int leftSonarTrig = 8; 
+//const int leftSonarEcho = 6;
+//long leftSonarRead;
+//long leftSonarCm;
+
+//const int frontSonarTrig = 8; 
+//const int frontSonarEcho = 6;
+//long frontSonarRead;
+//long frontSonarCm;
+
 // Algo
 
 const short int neededRecords = 5;
 short int savedRecords = 0;
 int rightSummedRecords = 0;
+int leftSummedRecords = 0;
+int frontSummedRecords = 0;
 int collisionDistance = 10;
+int currentAngle; // Updated after a setAngle call
 
 // SETUP =================================
 
@@ -45,11 +58,15 @@ void setup() {
   forward(defaultSpeed);
   
   Serial.write("OK");
+
+  setAngle(160);
 }
 
 // LOOP ==================================
 
 void loop() {
+
+  return;
 
   //Relevé de la distance à droite
   digitalWrite(rightSonarTrig, HIGH); 
@@ -59,6 +76,33 @@ void loop() {
   rightSonarCm = rightSonarRead / 58; 
   rightSummedRecords += rightSonarCm;
 
+  /*//Relevé de la distance à gauche
+  digitalWrite(leftSonarTrig, HIGH); 
+  delayMicroseconds(10); 
+  digitalWrite(leftSonarTrig, LOW); 
+  leftSonarRead = pulseIn(leftSonarEcho, HIGH); 
+  leftSonarCm = leftSonarRead / 58; 
+  leftSummedRecords += leftSonarCm;
+
+  //Relevé de la distance en face
+  digitalWrite(frontSonarTrig, HIGH); 
+  delayMicroseconds(10); 
+  digitalWrite(frontSonarTrig, LOW); 
+  frontSonarRead = pulseIn(frontSonarEcho, HIGH); 
+  frontSonarCm = frontSonarRead / 58; 
+  frontSummedRecords += frontSonarCm;*/
+
+  
+  savedRecords++;
+
+  if(currentAngle != 80)
+  {
+    //On remet les roues droites = 80 deg
+    setAngle(currentAngle < 80 ? currentAngle + 1 : currentAngle - 1);
+  }
+  
+  
+
   //Si on a fait suffisament de relevés pour être certain que les mesures soient
   //significatives
   if(savedRecords > neededRecords)
@@ -66,6 +110,10 @@ void loop() {
     int distanceToRight = rightSummedRecords / (float)neededRecords;
     int distanceToLeft = leftSummedRecords / (float)neededRecords;
     int distanceToFront = frontSummedRecords / (float)neededRecords;
+
+    rightSummedRecords = 0;
+    leftSummedRecords = 0;
+    frontSummedRecords = 0;
 
     //Si on détecte un obstacle vers la droite, la gauche, et en face
     if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
@@ -77,7 +125,7 @@ void loop() {
       motorDirection = !motorDirection;
       forward(defaultSpeed);
     }
-    else if(distancetoFront <= collisionDistance)
+    else if(distanceToFront <= collisionDistance)
     {
       if(distanceToLeft <= distanceToRight)
       {
@@ -113,7 +161,11 @@ void forward(int motorSpeed){
 // SETANGLE / SERVO =======================
 
 //fonction setAngle pour envoyer les impulsions
+//0 min
+//160 max
+//80 milieu
 void setAngle(int a){
+  currentAngle = a;
   int duree=map(a,0,179,1000,2000);// on transforme l'angle en microsecondes et on stocke dans la variable duree
   digitalWrite(pinServo,LOW);//on met le pin à l'état bas
   
