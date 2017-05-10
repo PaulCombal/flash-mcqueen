@@ -11,15 +11,21 @@ const int defaultSpeed = 255;
 // Servo
 
 int periode=20000;// période entre chaque début d'impulsion en microsecondes
-const int pinServo=8; // variable pour le pin connecté à la commande du servo
+const int pinServo=4; // variable pour le pin connecté à la commande du servo
 
 // Detecteurs
 
-// définition des broches utilisées 
-int trig = 8; 
-int echo = 6; 
-long lecture_echo; 
-long cm;
+const int rightSonarTrig = 8; 
+const int rightSonarEcho = 6;
+long rightSonarRead;
+long rightSonarCm;
+
+// Algo
+
+const short int neededRecords = 5;
+short int savedRecords = 0;
+int rightSummedRecords = 0;
+int collisionDistance = 10;
 
 // SETUP =================================
 
@@ -30,11 +36,11 @@ void setup() {
   pinMode(in2Pin, OUTPUT);
   pinMode(enablePin, OUTPUT);
   pinMode(pinServo, OUTPUT);
-  pinMode(trig, OUTPUT); 
-  pinMode(echo, INPUT); 
+  pinMode(rightSonarTrig, OUTPUT); 
+  pinMode(rightSonarEcho, INPUT); 
 
   digitalWrite(pinServo,LOW);
-  digitalWrite(trig, LOW); 
+  digitalWrite(rightSonarTrig, LOW); 
 
   forward(defaultSpeed);
   
@@ -44,35 +50,55 @@ void setup() {
 // LOOP ==================================
 
 void loop() {
-  forward(defaultSpeed);
-  delay(1000);
-  forward(0);
 
-  digitalWrite(trig, HIGH); 
+  //Relevé de la distance à droite
+  digitalWrite(rightSonarTrig, HIGH); 
   delayMicroseconds(10); 
-  digitalWrite(trig, LOW); 
-  lecture_echo = pulseIn(echo, HIGH); 
-  cm = lecture_echo / 58; 
-  Serial.print("Distancem : "); 
-  Serial.println(cm); 
-  delay(1000); 
+  digitalWrite(rightSonarTrig, LOW); 
+  rightSonarRead = pulseIn(rightSonarEcho, HIGH); 
+  rightSonarCm = rightSonarRead / 58; 
+  rightSummedRecords += rightSonarCm;
 
-  
-  if(false) //On détecte un obstacle vers la droite
+  //Si on a fait suffisament de relevés pour être certain que les mesures soient
+  //significatives
+  if(savedRecords > neededRecords)
   {
-    setAngle(0);//vers la gauche
-  }
-  else if(false) // On détecte un obstacle vers la gauche
-  {
-    setAngle(0); //vers la droite
-  }
-  if(false) //On détecte un collision imminente à l'avant
-  {
-    motorDirection = !motorDirection;
-    forward(defaultSpeed);
-    delay(1000); // TODO ajuster
-    motorDirection = !motorDirection;
-    forward(defaultSpeed);
+    int distanceToRight = rightSummedRecords / (float)neededRecords;
+    int distanceToLeft = leftSummedRecords / (float)neededRecords;
+    int distanceToFront = frontSummedRecords / (float)neededRecords;
+
+    //Si on détecte un obstacle vers la droite, la gauche, et en face
+    if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
+    {
+      //Demi tour
+      motorDirection = !motorDirection;
+      forward(defaultSpeed);
+      delay(1000); // TODO ajuster
+      motorDirection = !motorDirection;
+      forward(defaultSpeed);
+    }
+    else if(distancetoFront <= collisionDistance)
+    {
+      if(distanceToLeft <= distanceToRight)
+      {
+        //On va à droite
+        setAngle(180);
+      }
+      else
+      {
+        setAngle(0);
+      }
+    }
+    else if(distanceToRight <= collisionDistance)
+    {
+      // On détecte un obstacle vers la droite
+      setAngle(0); //vers la gauche
+    }
+    else if(distanceToLeft <= collisionDistance)
+    {
+      //On détecte un collision imminente à la gauche
+      setAngle(180); //Vers la droite
+    }
   }
 }
 
