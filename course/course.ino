@@ -59,14 +59,12 @@ void setup() {
   
   Serial.write("OK");
 
-  setAngle(160);
+  setAngle(80);
 }
 
 // LOOP ==================================
 
 void loop() {
-
-  return;
 
   //Relevé de la distance à droite
   digitalWrite(rightSonarTrig, HIGH); 
