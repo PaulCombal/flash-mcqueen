@@ -1,33 +1,39 @@
-//#include <mouvement.h>
-/*include of gyro libraries*/
+/*
+ # Product: 6 DOF Sensor-MPU6050 
+ # SKU    : SEN0142 
+ # Description:     
+ # To read  accel/gyro data from 6 DOF Sensor 
+*/
 
-#include <Wire.h>
-#include "../I2Cdev.h"
-#include "../MPU6050.h"
-
-MPU6050 accelgyro;
+#include "Wire.h"                 
+#include "I2Cdev.h"
+#include "MPU6050.h"
+MPU6050 accelgyro;  
 int16_t ax, ay, az;  // define accel as ax,ay,az
 int16_t gx, gy, gz;  // define gyro as gx,gy,gz
-
-int motorPin = 13;
+          
+#define LED_PIN 13
+bool blinkState = false;
 
 void setup() {
-	Serial.begin(9600);
-
-	pinMode(motorPin, OUTPUT);
-
-  Serial.write("OK");
-
-  Wire.begin();      // join I2C bus
+  Wire.begin();      // join I2C bus   
   Serial.begin(38400);    //  initialize serial communication
   Serial.println("Initializing I2C devices...");
-  accelgyro.initialize();
+  accelgyro.initialize();  
 
   // verify connection
   Serial.println("Testing device connections...");
   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+
+  pinMode(LED_PIN, OUTPUT);  // configure LED pin
 }
 
 void loop() {
-  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);  // read measurements from device
+
+
+ 
+  // blink LED to indicate activity
+  blinkState = !blinkState;
+  digitalWrite(LED_PIN, blinkState);
 }

@@ -6,6 +6,7 @@ const int enablePin = 11; //pwm
 const int in1Pin = 13;
 const int in2Pin = 12;
 bool motorDirection = true;
+const int defaultSpeed = 255;
 
 // Servo
 
@@ -24,7 +25,7 @@ void setup() {
 
   digitalWrite(pinServo,LOW);
 
-  forward(200);
+  forward(defaultSpeed);
   
   Serial.write("OK");
 }
@@ -32,12 +33,22 @@ void setup() {
 // LOOP ==================================
 
 void loop() {
-  setAngle(0);// on appelle la fonction setAngle définie plus bas
-  Serial.write("at 0");
-  delay(1000);
-  setAngle(180);
-  Serial.write("at 180");
-  delay(1000);
+  if(false) //On détecte un obstacle vers la droite
+  {
+    setAngle(0);//vers la gauche
+  }
+  else if(false) // On détecte un obstacle vers la gauche
+  {
+    setAngle(0); //vers la droite
+  }
+  if(false) //On détecte un collision imminente à l'avant
+  {
+    motorDirection = !motorDirection;
+    forward(defaultSpeed);
+    delay(1000); // TODO ajuster
+    motorDirection = !motorDirection;
+    forward(defaultSpeed);
+  }
 }
 
 // MOTEUR / FORWARD =======================
