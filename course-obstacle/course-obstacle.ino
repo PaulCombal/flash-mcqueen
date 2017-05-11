@@ -41,12 +41,19 @@ int collisionDistance = 10;
 int currentAngle; // Updated after a setAngle call
 Position currentPosition;
 Position destinationPosition;
+bool destinationReached = false;
+
+int defaultSpeed = 200;
+int startAngle;
+int currentAngle = 90;
+//90 -> vers le haut
 
 struct Position
 {
   int x;
   int y;
 }
+typedef struct Position Position;
 
 // SETUP =================================
 
@@ -62,8 +69,6 @@ void setup() {
 
   digitalWrite(pinServo,LOW);
   digitalWrite(rightSonarTrig, LOW); 
-
-  forward(defaultSpeed);
   
   currentPosition.x = 0:
   currentPosition.y = 0:
@@ -73,14 +78,18 @@ void setup() {
   
   Serial.write("OK");
 
-  setAngle(80);
+  //TODO Enregistrer les données du gyro pour que actuellement on soit vers notre nord
+
+  //startAngle = /*lecture du gyro*/
+  
+  setAngle(90);
 }
 
 // LOOP ==================================
 
 void loop() {
 
-  //Relevé de la distance à droite
+  /*//Relevé de la distance à droite
   digitalWrite(rightSonarTrig, HIGH); 
   delayMicroseconds(10); 
   digitalWrite(rightSonarTrig, LOW); 
@@ -88,7 +97,7 @@ void loop() {
   rightSonarCm = rightSonarRead / 58; 
   rightSummedRecords += rightSonarCm;
 
-  /*//Relevé de la distance à gauche
+  //Relevé de la distance à gauche
   digitalWrite(leftSonarTrig, HIGH); 
   delayMicroseconds(10); 
   digitalWrite(leftSonarTrig, LOW); 
@@ -108,12 +117,7 @@ void loop() {
   savedRecords++;
 
   if(currentAngle != 80)
-  {
-    //On remet les roues droites = 80 deg
-    setAngle(currentAngle < 80 ? currentAngle + 1 : currentAngle - 1);
-  }
-  
-  
+    setAngle(80);
 
   //Si on a fait suffisament de relevés pour être certain que les mesures soient
   //significatives
@@ -139,7 +143,7 @@ void loop() {
     }
     else if(distanceToFront <= collisionDistance)
     {
-      if(distanceToLeft <= distanceToRight)
+      if(distanceToLeft <= collisionDistance)
       {
         //On va à droite
         setAngle(180);
@@ -152,22 +156,49 @@ void loop() {
     else if(distanceToRight <= collisionDistance)
     {
       // On détecte un obstacle vers la droite
-      setAngle(0); //vers la gauche
+      setAngle(30); //vers la gauche un peu
     }
     else if(distanceToLeft <= collisionDistance)
     {
       //On détecte un collision imminente à la gauche
-      setAngle(180); //Vers la droite
+      setAngle(90); //Vers la droite un chouilla
+    }
+    else
+    {
+      //Aucune collision imminente
+      forward();
+    }
+
+    if(fabs(currentPosition.x - destinationPosition.x) < 10 && fabs(currentPosition.x - destinationPosition.x) < 10)
+    {
+      //On est arrivé
+      Serial.write("On est arrive");
+      return;
     }
   }
 }
 
-// MOTEUR / FORWARD =======================
+// UPDATEANGLE / GYRO 
+//détecte la direction dans laquelle on se dirige
 
-void forward(int motorSpeed){
-  analogWrite(enablePin, motorSpeed);
+void updateAngle()
+{
+  //currentAngle = /*lecture du gyro*/;
+}
+
+// MOTEUR / FORWARD =======================
+//Avance la voiture d'1 cm
+void forward(){
+  analogWrite(enablePin, defaultSpeed);
   digitalWrite(in1Pin, !motorDirection);
   digitalWrite(in2Pin, motorDirection);
+
+  delay(100);
+
+  analogWrite(enablePin, 0);
+
+  currentPosition.x += cos(currentAngle);
+  currentPosition.y += sin(currentAngle);
 }
 
 // SETANGLE / SERVO =======================

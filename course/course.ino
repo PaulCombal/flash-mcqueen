@@ -59,14 +59,22 @@ void setup() {
   
   Serial.write("OK");
 
-  setAngle(80);
+  setAngle(90);
 }
 
 // LOOP ==================================
 
 void loop() {
 
-  //Relevé de la distance à droite
+  //setAngle(0);
+  //delay(1000);
+  //setAngle(80);
+  //delay(1000);
+  //setAngle(160);
+  //delay(1000);
+  return;
+
+  /*//Relevé de la distance à droite
   digitalWrite(rightSonarTrig, HIGH); 
   delayMicroseconds(10); 
   digitalWrite(rightSonarTrig, LOW); 
@@ -74,7 +82,7 @@ void loop() {
   rightSonarCm = rightSonarRead / 58; 
   rightSummedRecords += rightSonarCm;
 
-  /*//Relevé de la distance à gauche
+  //Relevé de la distance à gauche
   digitalWrite(leftSonarTrig, HIGH); 
   delayMicroseconds(10); 
   digitalWrite(leftSonarTrig, LOW); 
@@ -93,10 +101,10 @@ void loop() {
   
   savedRecords++;
 
-  if(currentAngle != 80)
+  if(currentAngle != 90)
   {
-    //On remet les roues droites = 80 deg
-    setAngle(currentAngle < 80 ? currentAngle + 1 : currentAngle - 1);
+    //On remet les roues droites = 90 deg
+    setAngle(currentAngle < 90 ? currentAngle + 1 : currentAngle - 1);
   }
   
   
