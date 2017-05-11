@@ -125,6 +125,7 @@ void loop() {
     if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
     {
       //Demi tour
+      Serial.println("Je dois faire demi-tour");
       motorDirection = !motorDirection;
       forward(defaultSpeed);
       delay(1000); // TODO ajuster
@@ -136,21 +137,25 @@ void loop() {
       if(distanceToLeft <= distanceToRight)
       {
         //On va à droite
+        Serial.println("Obstacle devant et a gauche");
         setAngle(180);
       }
       else
       {
+        Serial.println("Obstacle devant et a droite");
         setAngle(0);
       }
     }
     else if(distanceToRight <= collisionDistance)
     {
       // On détecte un obstacle vers la droite
+      Serial.println("Obstacle a droite");
       setAngle(0); //vers la gauche
     }
     else if(distanceToLeft <= collisionDistance)
     {
       //On détecte un collision imminente à la gauche
+      Serial.println("Obstacle a gauche");
       setAngle(180); //Vers la droite
     }
   }
