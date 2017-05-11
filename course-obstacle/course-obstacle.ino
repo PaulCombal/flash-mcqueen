@@ -135,37 +135,74 @@ void loop() {
     if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
     {
       //Demi tour
+      Serial.println("Il faut faire demi-tour");
       motorDirection = !motorDirection;
-      forward(defaultSpeed);
-      delay(1000); // TODO ajuster
+      forward();
+      forward();
       motorDirection = !motorDirection;
-      forward(defaultSpeed);
     }
     else if(distanceToFront <= collisionDistance)
     {
-      if(distanceToLeft <= collisionDistance)
+      //Si on détecte un obstacle en face
+
+      //Si on détecte un obstacle à gauche ou si on longne la limite  gauche
+      if(distanceToLeft <= collisionDistance || currentPosition.x < 2)
       {
         //On va à droite
+        Serial.println("Un obstacle est proche en face et a gauche");
         setAngle(180);
+        forward();
+        setAngle(90);
       }
       else
       {
+        Serial.println("Un obstacle est proche en face et à droite");
         setAngle(0);
+        forward();
+        setAngle(90);
       }
     }
     else if(distanceToRight <= collisionDistance)
     {
       // On détecte un obstacle vers la droite
-      setAngle(30); //vers la gauche un peu
+      Serial.println("Un obstacle est proche juste sur ma droite");
+      setAngle(80); //vers la gauche un peu
+      forward();
+      setAngle(90);
     }
     else if(distanceToLeft <= collisionDistance)
     {
       //On détecte un collision imminente à la gauche
-      setAngle(90); //Vers la droite un chouilla
+      Serial.println("Un obstacle est proche juste sur ma gauche");
+      setAngle(100); //Vers la droite un chouilla
+      forward();
+      setAngle(90);
+    }
+    else if(currentPosition.x < 2)
+    {
+      Serial.print("Je ne détecte rien, mais longe le bord gauche de la zone");
+    }
+    else if(currentPosition.x > 298)
+    {
+      Serial.print("Je ne détecte rien, mais longe le bord droit de la zone");
+    }
+    else if(currentPosition.y < 2)
+    {
+      Serial.print("Je ne détecte rien, mais longe le bord inferieur de la zone");
+    }
+    else if(currentPosition.y > 198)
+    {
+      Serial.print("Je ne détecte rien, mais longe le bord superieur de la zone");
     }
     else
     {
       //Aucune collision imminente
+      Serial.println("Aucun obstacle détecté, ma position est");
+      Serial.print(currentPosition.x);
+      Serial.print("\t");
+      Serial.print(currentPosition.y);
+      Serial.print("\n");
+      
       forward();
     }
 
@@ -176,14 +213,6 @@ void loop() {
       return;
     }
   }
-}
-
-// UPDATEANGLE / GYRO 
-//détecte la direction dans laquelle on se dirige
-
-void updateAngle()
-{
-  //currentAngle = /*lecture du gyro*/;
 }
 
 // MOTEUR / FORWARD =======================
