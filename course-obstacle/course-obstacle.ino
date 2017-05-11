@@ -73,8 +73,8 @@ void setup() {
   currentPosition.x = 0:
   currentPosition.y = 0:
 
-  destinationPosition.x = 0;
-  destinationPosition.y = 0;
+  destinationPosition.x = 300;
+  destinationPosition.y = 150;
   
   Serial.write("OK");
 
