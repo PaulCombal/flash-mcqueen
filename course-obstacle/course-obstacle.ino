@@ -15,17 +15,17 @@ const int pinServo=4; // variable pour le pin connecté à la commande du servo
 
 // Detecteurs
 
-const int rightSonarTrig = 8; 
+const int rightSonarTrig = 8;
 const int rightSonarEcho = 6;
 long rightSonarRead;
 long rightSonarCm;
 
-//const int leftSonarTrig = 8; 
+//const int leftSonarTrig = 8;
 //const int leftSonarEcho = 6;
 //long leftSonarRead;
 //long leftSonarCm;
 
-//const int frontSonarTrig = 8; 
+//const int frontSonarTrig = 8;
 //const int frontSonarEcho = 6;
 //long frontSonarRead;
 //long frontSonarCm;
@@ -59,29 +59,29 @@ typedef struct Position Position;
 
 void setup() {
   Serial.begin(115200);
-  
+
   pinMode(in1Pin, OUTPUT);
   pinMode(in2Pin, OUTPUT);
   pinMode(enablePin, OUTPUT);
   pinMode(pinServo, OUTPUT);
-  pinMode(rightSonarTrig, OUTPUT); 
-  pinMode(rightSonarEcho, INPUT); 
+  pinMode(rightSonarTrig, OUTPUT);
+  pinMode(rightSonarEcho, INPUT);
 
   digitalWrite(pinServo,LOW);
-  digitalWrite(rightSonarTrig, LOW); 
-  
+  digitalWrite(rightSonarTrig, LOW);
+
   currentPosition.x = 0:
   currentPosition.y = 0:
 
   destinationPosition.x = 300;
-  destinationPosition.y = 150;
-  
+  destinationPosition.y = 100;
+
   Serial.write("OK");
 
   //TODO Enregistrer les données du gyro pour que actuellement on soit vers notre nord
 
   //startAngle = /*lecture du gyro*/
-  
+
   setAngle(90);
 }
 
@@ -90,30 +90,30 @@ void setup() {
 void loop() {
 
   /*//Relevé de la distance à droite
-  digitalWrite(rightSonarTrig, HIGH); 
-  delayMicroseconds(10); 
-  digitalWrite(rightSonarTrig, LOW); 
-  rightSonarRead = pulseIn(rightSonarEcho, HIGH); 
-  rightSonarCm = rightSonarRead / 58; 
+  digitalWrite(rightSonarTrig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(rightSonarTrig, LOW);
+  rightSonarRead = pulseIn(rightSonarEcho, HIGH);
+  rightSonarCm = rightSonarRead / 58;
   rightSummedRecords += rightSonarCm;
 
   //Relevé de la distance à gauche
-  digitalWrite(leftSonarTrig, HIGH); 
-  delayMicroseconds(10); 
-  digitalWrite(leftSonarTrig, LOW); 
-  leftSonarRead = pulseIn(leftSonarEcho, HIGH); 
-  leftSonarCm = leftSonarRead / 58; 
+  digitalWrite(leftSonarTrig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(leftSonarTrig, LOW);
+  leftSonarRead = pulseIn(leftSonarEcho, HIGH);
+  leftSonarCm = leftSonarRead / 58;
   leftSummedRecords += leftSonarCm;
 
   //Relevé de la distance en face
-  digitalWrite(frontSonarTrig, HIGH); 
-  delayMicroseconds(10); 
-  digitalWrite(frontSonarTrig, LOW); 
-  frontSonarRead = pulseIn(frontSonarEcho, HIGH); 
-  frontSonarCm = frontSonarRead / 58; 
+  digitalWrite(frontSonarTrig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(frontSonarTrig, LOW);
+  frontSonarRead = pulseIn(frontSonarEcho, HIGH);
+  frontSonarCm = frontSonarRead / 58;
   frontSummedRecords += frontSonarCm;*/
 
-  
+
   savedRecords++;
 
   if(currentAngle != 80)
@@ -181,18 +181,26 @@ void loop() {
     else if(currentPosition.x < 2)
     {
       Serial.print("Je ne détecte rien, mais longe le bord gauche de la zone");
+      setAngle(90);
+      forward();
     }
     else if(currentPosition.x > 298)
     {
       Serial.print("Je ne détecte rien, mais longe le bord droit de la zone");
+      setAngle(90);
+      forward();
     }
     else if(currentPosition.y < 2)
     {
       Serial.print("Je ne détecte rien, mais longe le bord inferieur de la zone");
+      setAngle(90);
+      forward();
     }
     else if(currentPosition.y > 198)
     {
       Serial.print("Je ne détecte rien, mais longe le bord superieur de la zone");
+      setAngle(90);
+      forward();
     }
     else
     {
@@ -202,7 +210,7 @@ void loop() {
       Serial.print("\t");
       Serial.print(currentPosition.y);
       Serial.print("\n");
-      
+
       forward();
     }
 
@@ -240,10 +248,10 @@ void setAngle(int a){
   currentAngle = a;
   int duree=map(a,0,179,1000,2000);// on transforme l'angle en microsecondes et on stocke dans la variable duree
   digitalWrite(pinServo,LOW);//on met le pin à l'état bas
-  
-  // la boucle qui suit est nécessaire 
+
+  // la boucle qui suit est nécessaire
   // pour laisser le temps au servo d'aller à sa position
-  for (int t=0;t<300;t++){ 
+  for (int t=0;t<300;t++){
     digitalWrite(pinServo,HIGH);// on envoie l'impulsion
     delayMicroseconds(duree); // pendant la bonne durée
     digitalWrite(pinServo,LOW); // on stoppe l'impulsion
