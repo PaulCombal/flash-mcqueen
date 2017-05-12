@@ -1,5 +1,7 @@
 //#include <mouvement.h>
-
+#define RIGHT 180
+#define LEFT 0
+#define STRAIGHT 90
 // Moteur
 
 const int enablePin = 11; //pwm
@@ -38,14 +40,15 @@ int rightSummedRecords = 0;
 int leftSummedRecords = 0;
 int frontSummedRecords = 0;
 int collisionDistance = 10;
-int currentAngle; // Updated after a setAngle call
+int currentWheelAngle; // Updated after a setAngle call
+int currentVehicleAngle; //Updated after currentWheelAngle used
 Position currentPosition;
 Position destinationPosition;
 bool destinationReached = false;
 
 int defaultSpeed = 200;
 int startAngle;
-int currentAngle = 90;
+int currentWheelAngle = 90;
 //90 -> vers le haut
 
 struct Position
@@ -82,7 +85,7 @@ void setup() {
 
   //startAngle = /*lecture du gyro*/
 
-  setAngle(90);
+  setAngle(STRAIGHT);
 }
 
 // LOOP ==================================
@@ -116,7 +119,7 @@ void loop() {
 
   savedRecords++;
 
-  if(currentAngle != 80)
+  if(currentWheelAngle != 80)
     setAngle(80);
 
   //Si on a fait suffisament de relevés pour être certain que les mesures soient
@@ -150,16 +153,16 @@ void loop() {
       {
         //On va à droite
         Serial.println("Un obstacle est proche en face et a gauche");
-        setAngle(180);
+        setAngle(RIGHT);
         forward();
-        setAngle(90);
+        setAngle(STRAIGHT);
       }
       else
       {
         Serial.println("Un obstacle est proche en face et à droite");
-        setAngle(0);
+        setAngle(LEFT);
         forward();
-        setAngle(90);
+        setAngle(STRAIGHT);
       }
     }
     else if(distanceToRight <= collisionDistance)
@@ -168,7 +171,7 @@ void loop() {
       Serial.println("Un obstacle est proche juste sur ma droite");
       setAngle(80); //vers la gauche un peu
       forward();
-      setAngle(90);
+      setAngle(STRAIGHT);
     }
     else if(distanceToLeft <= collisionDistance)
     {
@@ -176,30 +179,30 @@ void loop() {
       Serial.println("Un obstacle est proche juste sur ma gauche");
       setAngle(100); //Vers la droite un chouilla
       forward();
-      setAngle(90);
+      setAngle(STRAIGHT);
     }
     else if(currentPosition.x < 2)
     {
       Serial.print("Je ne détecte rien, mais longe le bord gauche de la zone");
-      setAngle(90);
+      setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.x > 298)
     {
       Serial.print("Je ne détecte rien, mais longe le bord droit de la zone");
-      setAngle(90);
+      setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.y < 2)
     {
       Serial.print("Je ne détecte rien, mais longe le bord inferieur de la zone");
-      setAngle(90);
+      setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.y > 198)
     {
       Serial.print("Je ne détecte rien, mais longe le bord superieur de la zone");
-      setAngle(90);
+      setAngle(STRAIGHT);
       forward();
     }
     else
@@ -234,8 +237,15 @@ void forward(){
 
   analogWrite(enablePin, 0);
 
-  currentPosition.x += cos(currentAngle);
-  currentPosition.y += sin(currentAngle);
+  currentPosition.x += cos(currentWheelAngle);
+  currentPosition.y += sin(currentWheelAngle);
+
+  if(currentWheelAngle > 90) {
+    currentVehicleAngle += 20;
+  }
+  else if(currentWheelAngle < 90) {
+    currentVehicleAngle -= 20;
+  }
 }
 
 // SETANGLE / SERVO =======================
@@ -245,7 +255,7 @@ void forward(){
 //160 max
 //80 milieu
 void setAngle(int a){
-  currentAngle = a;
+  currentWheelAngle = a;
   int duree=map(a,0,179,1000,2000);// on transforme l'angle en microsecondes et on stocke dans la variable duree
   digitalWrite(pinServo,LOW);//on met le pin à l'état bas
 
