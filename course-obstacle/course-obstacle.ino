@@ -236,16 +236,17 @@ void forward(){
   delay(100);
 
   analogWrite(enablePin, 0);
-
-  currentPosition.x += cos(currentWheelAngle);
-  currentPosition.y += sin(currentWheelAngle);
-
+  
   if(currentWheelAngle > 90) {
     currentVehicleAngle += 20;
   }
   else if(currentWheelAngle < 90) {
     currentVehicleAngle -= 20;
   }
+  currentPosition.x += cos(currentVehicleAngle);
+  currentPosition.y += sin(currentVehicleAngle);
+
+
 }
 
 // SETANGLE / SERVO =======================
