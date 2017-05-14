@@ -1,12 +1,12 @@
 //#include <mouvement.h>
-#define RIGHT 180
-#define LEFT 0
+#define LEFT 180
+#define RIGHT 0
 #define STRAIGHT 90
 
 struct Position
 {
-  int x;
-  int y;
+  float x;
+  float y;
 };
 typedef struct Position Position;
 
@@ -17,12 +17,12 @@ const int enablePin = 11; //pwm
 const int in1Pin = 13;
 const int in2Pin = 12;
 bool motorDirection = true;
-const int defaultSpeed = 200;
+const int defaultSpeed = 255;
 
 // Servo
 
 int periode=20000;// période entre chaque début d'impulsion en microsecondes
-const int pinServo=4; // variable pour le pin connecté à la commande du servo
+const int pinServo=2; // variable pour le pin connecté à la commande du servo
 
 // Detecteurs
 
@@ -97,6 +97,10 @@ void setup() {
 
 void loop() {
 
+  forward();
+  delay(1000);
+  return;
+
   digitalWrite(rightSonarTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(rightSonarTrig, LOW);
@@ -156,6 +160,16 @@ void loop() {
     Serial.print(distanceToFront);
     Serial.print("\n");
 
+    Serial.print("Ma position est: ");
+    Serial.print(currentPosition.x);
+    Serial.print(" - ");
+    Serial.print(currentPosition.y);
+    Serial.print("\n");
+
+    Serial.print("L'angle du véhicule est: ");
+    Serial.print(currentVehicleAngle);
+    Serial.print("\n");
+
     //Si on détecte un obstacle vers la droite, la gauche, et en face
     if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
     {
@@ -171,72 +185,80 @@ void loop() {
       //Si on détecte un obstacle en face
 
       //Si on détecte un obstacle à gauche ou si on longne la limite  gauche
-      if(distanceToLeft <= collisionDistance || currentPosition.x < 2)
+      if(distanceToLeft <= collisionDistance)
       {
         //On va à droite
         Serial.println("Un obstacle est proche en face et a gauche");
         setAngle(RIGHT);
         forward();
-        setAngle(STRAIGHT);
       }
-      else
+      /*else if(distanceToLeft <= collisionDistance)
       {
         Serial.println("Un obstacle est proche en face et à droite");
         setAngle(LEFT);
         forward();
         setAngle(STRAIGHT);
+      }*/
+      else
+      {
+        Serial.println("Il y a un obstacle juste en face de moi, ce n'est pas sensé arriver.");
+        setAngle(RIGHT);
+        forward();        
       }
     }
-    else if(distanceToRight <= collisionDistance)
+    /*else if(distanceToRight <= collisionDistance)
     {
       // On détecte un obstacle vers la droite
       Serial.println("Un obstacle est proche juste sur ma droite");
-      setAngle(80); //vers la gauche un peu
+      setAngle(100); //vers la gauche un peu
       forward();
-      setAngle(STRAIGHT);
-    }
+    }*/
     else if(distanceToLeft <= collisionDistance)
     {
       //On détecte un collision imminente à la gauche
       Serial.println("Un obstacle est proche juste sur ma gauche");
-      setAngle(100); //Vers la droite un chouilla
+      setAngle(80); //Vers la droite un chouilla
       forward();
-      setAngle(STRAIGHT);
     }
     else if(currentPosition.x < 2)
     {
-      Serial.print("Je ne détecte rien, mais longe le bord gauche de la zone");
+      Serial.println("Je ne détecte rien, mais longe le bord gauche de la zone");
       setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.x > 298)
     {
-      Serial.print("Je ne détecte rien, mais longe le bord droit de la zone");
+      Serial.println("Je ne détecte rien, mais longe le bord droit de la zone");
       setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.y < 2)
     {
-      Serial.print("Je ne détecte rien, mais longe le bord inferieur de la zone");
+      Serial.println("Je ne détecte rien, mais longe le bord inferieur de la zone");
       setAngle(STRAIGHT);
       forward();
     }
     else if(currentPosition.y > 198)
     {
-      Serial.print("Je ne détecte rien, mais longe le bord superieur de la zone");
+      Serial.println("Je ne détecte rien, mais longe le bord superieur de la zone");
       setAngle(STRAIGHT);
       forward();
     }
     else
     {
       //Aucune collision imminente
-      Serial.println("Aucun obstacle détecté, ma position est");
-      Serial.print(currentPosition.x);
-      Serial.print("\t");
-      Serial.print(currentPosition.y);
-      Serial.print("\n");
-
       forward();
+    }
+
+    if(distanceToFront < 1)
+    {
+      Serial.println("Oups, on s'est mangé un mur");
+      setAngle(STRAIGHT);
+      motorDirection = !motorDirection;
+      forward();
+      forward();
+      motorDirection = !motorDirection;
+      
     }
 
     if(fabs(currentPosition.x - destinationPosition.x) < 10 && fabs(currentPosition.x - destinationPosition.x) < 10)
@@ -255,7 +277,7 @@ void forward(){
   digitalWrite(in1Pin, !motorDirection);
   digitalWrite(in2Pin, motorDirection);
 
-  delay(100);
+  delay(1000);
 
   analogWrite(enablePin, 0);
   
@@ -265,9 +287,9 @@ void forward(){
   else if(currentWheelAngle < 90) {
     currentVehicleAngle -= 20;
   }
-  currentPosition.x += cos(currentVehicleAngle);
-  currentPosition.y += sin(currentVehicleAngle);
-
+  
+  currentPosition.x += cos(currentVehicleAngle * 3.14 / 180);
+  currentPosition.y += sin(currentVehicleAngle * 3.14 / 180);
 
 }
 
