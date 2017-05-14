@@ -2,13 +2,22 @@
 #define RIGHT 180
 #define LEFT 0
 #define STRAIGHT 90
+
+struct Position
+{
+  int x;
+  int y;
+};
+typedef struct Position Position;
+
+
 // Moteur
 
 const int enablePin = 11; //pwm
 const int in1Pin = 13;
 const int in2Pin = 12;
 bool motorDirection = true;
-const int defaultSpeed = 255;
+const int defaultSpeed = 200;
 
 // Servo
 
@@ -40,23 +49,12 @@ int rightSummedRecords = 0;
 int leftSummedRecords = 0;
 int frontSummedRecords = 0;
 int collisionDistance = 10;
-int currentWheelAngle; // Updated after a setAngle call
-int currentVehicleAngle; //Updated after currentWheelAngle used
+int currentWheelAngle = 90; // Updated after a setAngle call
+int currentVehicleAngle = 90; //Updated after currentWheelAngle used
 Position currentPosition;
 Position destinationPosition;
 bool destinationReached = false;
 
-int defaultSpeed = 200;
-int startAngle;
-int currentWheelAngle = 90;
-//90 -> vers le haut
-
-struct Position
-{
-  int x;
-  int y;
-}
-typedef struct Position Position;
 
 // SETUP =================================
 
@@ -73,8 +71,8 @@ void setup() {
   digitalWrite(pinServo,LOW);
   digitalWrite(rightSonarTrig, LOW);
 
-  currentPosition.x = 0:
-  currentPosition.y = 0:
+  currentPosition.x = 0;
+  currentPosition.y = 0;
 
   destinationPosition.x = 300;
   destinationPosition.y = 100;
@@ -119,8 +117,8 @@ void loop() {
 
   savedRecords++;
 
-  if(currentWheelAngle != 80)
-    setAngle(80);
+  //if(currentWheelAngle != 80)
+  //  setAngle(80);
 
   //Si on a fait suffisament de relevés pour être certain que les mesures soient
   //significatives
