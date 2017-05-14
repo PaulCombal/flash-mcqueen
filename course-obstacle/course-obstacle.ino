@@ -27,19 +27,21 @@ const int pinServo=4; // variable pour le pin connecté à la commande du servo
 // Detecteurs
 
 const int rightSonarTrig = 8;
+const int leftSonarTrig = 7;
+const int frontSonarTrig = 4;
+
+
 const int rightSonarEcho = 6;
 long rightSonarRead;
 long rightSonarCm;
 
-//const int leftSonarTrig = 8;
-//const int leftSonarEcho = 6;
-//long leftSonarRead;
-//long leftSonarCm;
+const int leftSonarEcho = 5;
+long leftSonarRead;
+long leftSonarCm;
 
-//const int frontSonarTrig = 8;
-//const int frontSonarEcho = 6;
-//long frontSonarRead;
-//long frontSonarCm;
+const int frontSonarEcho = 3;
+long frontSonarRead;
+long frontSonarCm;
 
 // Algo
 
@@ -48,7 +50,7 @@ short int savedRecords = 0;
 int rightSummedRecords = 0;
 int leftSummedRecords = 0;
 int frontSummedRecords = 0;
-int collisionDistance = 10;
+int collisionDistance = 4;
 int currentWheelAngle = 90; // Updated after a setAngle call
 int currentVehicleAngle = 90; //Updated after currentWheelAngle used
 Position currentPosition;
@@ -64,12 +66,21 @@ void setup() {
   pinMode(in1Pin, OUTPUT);
   pinMode(in2Pin, OUTPUT);
   pinMode(enablePin, OUTPUT);
+  
   pinMode(pinServo, OUTPUT);
+  
   pinMode(rightSonarTrig, OUTPUT);
+  pinMode(leftSonarTrig, OUTPUT);
+  pinMode(frontSonarTrig, OUTPUT);
+  
   pinMode(rightSonarEcho, INPUT);
+  pinMode(leftSonarEcho, INPUT);
+  pinMode(frontSonarEcho, INPUT);
 
   digitalWrite(pinServo,LOW);
   digitalWrite(rightSonarTrig, LOW);
+  digitalWrite(leftSonarTrig, LOW);
+  digitalWrite(frontSonarTrig, LOW);
 
   currentPosition.x = 0;
   currentPosition.y = 0;
@@ -79,10 +90,6 @@ void setup() {
 
   Serial.write("OK");
 
-  //TODO Enregistrer les données du gyro pour que actuellement on soit vers notre nord
-
-  //startAngle = /*lecture du gyro*/
-
   setAngle(STRAIGHT);
 }
 
@@ -90,29 +97,34 @@ void setup() {
 
 void loop() {
 
-  /*//Relevé de la distance à droite
   digitalWrite(rightSonarTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(rightSonarTrig, LOW);
+
   rightSonarRead = pulseIn(rightSonarEcho, HIGH);
   rightSonarCm = rightSonarRead / 58;
   rightSummedRecords += rightSonarCm;
 
-  //Relevé de la distance à gauche
+  delay(50);
+
   digitalWrite(leftSonarTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(leftSonarTrig, LOW);
+
   leftSonarRead = pulseIn(leftSonarEcho, HIGH);
   leftSonarCm = leftSonarRead / 58;
   leftSummedRecords += leftSonarCm;
 
-  //Relevé de la distance en face
+  delay(50);
+
   digitalWrite(frontSonarTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(frontSonarTrig, LOW);
+
+  //Relevé de la distance en face
   frontSonarRead = pulseIn(frontSonarEcho, HIGH);
   frontSonarCm = frontSonarRead / 58;
-  frontSummedRecords += frontSonarCm;*/
+  frontSummedRecords += frontSonarCm;
 
 
   savedRecords++;
@@ -131,6 +143,18 @@ void loop() {
     rightSummedRecords = 0;
     leftSummedRecords = 0;
     frontSummedRecords = 0;
+
+    Serial.print("Distance to right is ");
+    Serial.print(distanceToRight);
+    Serial.print("\n");
+    
+    Serial.print("Distance to left is ");
+    Serial.print(distanceToLeft);
+    Serial.print("\n");
+
+    Serial.print("Distance to front is ");
+    Serial.print(distanceToFront);
+    Serial.print("\n");
 
     //Si on détecte un obstacle vers la droite, la gauche, et en face
     if(distanceToRight <= collisionDistance && distanceToLeft <= collisionDistance && distanceToFront <= collisionDistance)
