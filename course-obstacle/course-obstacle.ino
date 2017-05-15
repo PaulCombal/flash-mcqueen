@@ -101,6 +101,9 @@ void setup() {
 
 void loop() {
 
+  forward();
+  return;
+
   digitalWrite(rightSonarTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(rightSonarTrig, LOW);
@@ -141,26 +144,18 @@ void loop() {
   if(savedRecords > neededRecords)
   {
     Serial.print("Distance to right is ");
-    Serial.print(distanceToRight);
-    Serial.print("\t - \t");
     Serial.print(rightSummedRecords);
     Serial.print("\n");
     
     Serial.print("Distance to left is ");
-    Serial.print(distanceToLeft);
-    Serial.print("\t - \t");
     Serial.print(leftSummedRecords);
     Serial.print("\n");
 
     Serial.print("Distance to front is ");
-    Serial.print(distanceToFront);
-    Serial.print("\t - \t");
     Serial.print(frontSummedRecords);
     Serial.print("\n");
 
     Serial.print("Ma position est: ");
-    Serial.print(currentPosition.x);
-    Serial.print(" - ");
     Serial.print(currentPosition.y);
     Serial.print("\n");
 
@@ -172,7 +167,7 @@ void loop() {
     leftSummedRecords = 0;
     frontSummedRecords = 0;
 
-    return;
+    //return;
 
     //Si on détecte un obstacle vers la droite, la gauche, et en face
     if(collide(rightSummedRecords) && collide(leftSummedRecords) && collide(frontSummedRecords))
@@ -218,7 +213,7 @@ void loop() {
       setAngle(100); //vers la gauche un peu
       forward();
     }*/
-    else if(collide(summedLeftDistance))
+    else if(collide(leftSummedRecords))
     {
       //On détecte un collision imminente à la gauche
       Serial.println("Un obstacle est proche juste sur ma gauche");
@@ -284,7 +279,7 @@ bool collide(int summedDistance)
 // MOTEUR / FORWARD =======================
 //Avance la voiture d'1 cm
 void forward(){
-  analogWrite(enablePin, 250);
+  analogWrite(enablePin, defaultSpeed);
   digitalWrite(in1Pin, motorDirection);
   digitalWrite(in2Pin, !motorDirection);
 
