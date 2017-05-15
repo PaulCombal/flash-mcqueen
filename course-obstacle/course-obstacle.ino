@@ -1,4 +1,3 @@
-//#include <mouvement.h>
 #define LEFT 180
 #define RIGHT 0
 #define STRAIGHT 90
@@ -16,7 +15,7 @@ typedef struct Position Position;
 const int enablePin = 11; //pwm
 const int in1Pin = 13;
 const int in2Pin = 12;
-bool motorDirection = true;
+bool motorDirection = false;
 const int defaultSpeed = 255;
 
 // Servo
@@ -96,9 +95,7 @@ void setup() {
 // LOOP ==================================
 
 void loop() {
-
   forward();
-  delay(1000);
   return;
 
   digitalWrite(rightSonarTrig, HIGH);
@@ -273,13 +270,17 @@ void loop() {
 // MOTEUR / FORWARD =======================
 //Avance la voiture d'1 cm
 void forward(){
-  analogWrite(enablePin, defaultSpeed);
-  digitalWrite(in1Pin, !motorDirection);
-  digitalWrite(in2Pin, motorDirection);
+  analogWrite(enablePin, 250);
+  digitalWrite(in1Pin, motorDirection);
+  digitalWrite(in2Pin, !motorDirection);
 
-  delay(1000);
+  delay(500);
 
-  analogWrite(enablePin, 0);
+  //Serial.println("Shutting down");
+
+  digitalWrite(enablePin, LOW);
+
+  delay(500);
   
   if(currentWheelAngle > 90) {
     currentVehicleAngle += 20;
