@@ -1,4 +1,4 @@
-Pour compiler, vous aurez besoin des librairies suivates:
+Pour compiler test-gyro, vous aurez besoin des librairies suivates:
 
 I2Cdev
 
