@@ -1,6 +1,8 @@
 #define LEFT 180
 #define RIGHT 0
 #define STRAIGHT 90
+#define FRONT true
+#define SIDES false
 
 struct Position
 {
@@ -15,15 +17,17 @@ typedef struct Position Position;
 const int enablePin = 11; //pwm
 const int in1Pin = 13;
 const int in2Pin = 12;
-bool motorDirection = true;
-const int defaultSpeed = 255;
+const int reservedLowPin = 9;
+
+bool motorDirection = false;
+const int defaultSpeed = 175;
 
 // Servo
 
 int periode=20000;// période entre chaque début d'impulsion en microsecondes
 const int pinServo=2; // variable pour le pin connecté à la commande du servo
 
-// Detecteurs
+// Detecteurs  
 
 const int rightSonarTrig = 8;
 const int leftSonarTrig = 7;
@@ -49,9 +53,10 @@ short int savedRecords = 0;
 int rightSummedRecords = 0;
 int leftSummedRecords = 0;
 int frontSummedRecords = 0;
-int collisionDistance = 30;
+int collisionDistance = 10;
+int collisionDistanceFront = 30;
 int currentWheelAngle = 90; // Updated after a setAngle call
-int currentVehicleAngle = 90; //Updated after currentWheelAngle used
+float currentVehicleAngle = 90; //Updated after currentWheelAngle used
 Position currentPosition;
 Position destinationPosition;
 bool destinationReached = false;
@@ -76,7 +81,7 @@ void setup() {
   pinMode(leftSonarEcho, INPUT);
   pinMode(frontSonarEcho, INPUT);
 
-  digitalWrite(pinServo,LOW);
+  //digitalWrite(pinServo,LOW);
   digitalWrite(rightSonarTrig, LOW);
   digitalWrite(leftSonarTrig, LOW);
   digitalWrite(frontSonarTrig, LOW);
@@ -89,10 +94,7 @@ void setup() {
 
   Serial.write("OK");
 
-  digitalWrite(0, LOW);
-  digitalWrite(1, LOW);
-  digitalWrite(2, LOW);
-  
+  digitalWrite(reservedLowPin, LOW);
 
   setAngle(STRAIGHT);
 }
@@ -101,7 +103,6 @@ void setup() {
 
 void loop() {
 
-  forward();
   return;
 
   digitalWrite(rightSonarTrig, HIGH);
@@ -156,6 +157,8 @@ void loop() {
     Serial.print("\n");
 
     Serial.print("Ma position est: ");
+    Serial.print(currentPosition.x);
+    Serial.print("\t - \t");
     Serial.print(currentPosition.y);
     Serial.print("\n");
 
@@ -163,14 +166,8 @@ void loop() {
     Serial.print(currentVehicleAngle);
     Serial.print("\n");
 
-    rightSummedRecords = 0;
-    leftSummedRecords = 0;
-    frontSummedRecords = 0;
-
-    //return;
-
     //Si on détecte un obstacle vers la droite, la gauche, et en face
-    if(collide(rightSummedRecords) && collide(leftSummedRecords) && collide(frontSummedRecords))
+    if(collide(rightSummedRecords, SIDES) && collide(leftSummedRecords, SIDES) && collide(frontSummedRecords, FRONT))
     {
       //Demi tour
       Serial.println("Il faut faire demi-tour");
@@ -179,12 +176,12 @@ void loop() {
       forward();
       motorDirection = !motorDirection;
     }
-    else if(collide(frontSummedRecords))
+    else if(collide(frontSummedRecords, FRONT))
     {
       //Si on détecte un obstacle en face
 
       //Si on détecte un obstacle à droite
-      if(collide(rightSummedRecords))
+      if(collide(rightSummedRecords, SIDES))
       {
         //On va à gauche
         Serial.println("Un obstacle est proche en face et a droite");
@@ -206,40 +203,44 @@ void loop() {
         forward();
       }
     }
-    /*else if(distanceToRight <= collisionDistance)
+    else if(collide(rightSummedRecords, SIDES))
     {
       // On détecte un obstacle vers la droite
       Serial.println("Un obstacle est proche juste sur ma droite");
-      setAngle(100); //vers la gauche un peu
+      setAngle(110); //vers la gauche un peu
       forward();
-    }*/
-    else if(collide(leftSummedRecords))
+    }
+    else if(collide(leftSummedRecords, SIDES))
     {
       //On détecte un collision imminente à la gauche
       Serial.println("Un obstacle est proche juste sur ma gauche");
-      setAngle(80); //Vers la droite un chouilla
+      setAngle(70); //Vers la droite un chouilla
       forward();
     }
-    else if(currentPosition.x < 2 && currentVehicleAngle > 90)
+    else if(currentPosition.x < 10 && (currentVehicleAngle > 90 && currentVehicleAngle < 270))
     {
+      //On sort de la zone par la gauche
       Serial.println("Je ne détecte rien, mais longe le bord gauche de la zone");
       setAngle(RIGHT);
       forward();
     }
-    else if(currentPosition.x > 298 && currentVehicleAngle < 90)
+    else if(currentPosition.x > 290 && (currentVehicleAngle < 90 && currentVehicleAngle > 270))
     {
+      //On sort de la zone par la droite
       Serial.println("Je ne détecte rien, mais longe le bord droit de la zone");
       setAngle(RIGHT);
       forward();
     }
-    else if(currentPosition.y < 2 && currentVehicleAngle > 180)
+    else if(currentPosition.y < 10 && (currentVehicleAngle > 180 && currentVehicleAngle < 360))
     {
+      //On sort de la zone par en bas
       Serial.println("Je ne détecte rien, mais longe le bord inferieur de la zone");
       setAngle(RIGHT);
       forward();
     }
-    else if(currentPosition.y > 198 && currentVehicleAngle < 180)
+    else if(currentPosition.y > 190 && currentVehicleAngle < 180 && currentVehicleAngle > 0)
     {
+      //On sort de la zone par le haut
       Serial.println("Je ne détecte rien, mais longe le bord superieur de la zone");
       setAngle(RIGHT);
       forward();
@@ -248,6 +249,7 @@ void loop() {
     {
       //Aucune collision imminente
       Serial.println("Rien ne se passe");
+      setAngle(LEFT);
       forward();
     }
 
@@ -268,12 +270,20 @@ void loop() {
       Serial.write("On est arrive");
       return;
     }
-  }
-}
 
-bool collide(int summedDistance)
+    rightSummedRecords = 0;
+    leftSummedRecords = 0;
+    frontSummedRecords = 0;
+  } // => fin de "Si on a assez de relevés"
+} // => fin de loop
+
+// CAPTEURS ==============================
+bool collide(int summedDistance, bool isFront)
 {
-  return summedDistance != 0 && summedDistance < collisionDistance;
+  if(isFront)
+    return summedDistance > 0 && summedDistance < collisionDistanceFront;
+  else
+    return summedDistance > 0 && summedDistance < collisionDistance;
 }
 
 // MOTEUR / FORWARD =======================
@@ -283,32 +293,47 @@ void forward(){
   digitalWrite(in1Pin, motorDirection);
   digitalWrite(in2Pin, !motorDirection);
 
-  delay(500);
-
-  //Serial.println("Shutting down");
+  delay(100);
 
   digitalWrite(enablePin, LOW);
 
-  delay(500);
-  
-  if(currentWheelAngle > 90) {
-    currentVehicleAngle += 20;
+    //Si on va tout droit
+  if(motorDirection == false)
+  {
+    if(currentWheelAngle > 90) {
+      currentVehicleAngle += 1.34;
+    }
+    else if(currentWheelAngle < 90) {
+      currentVehicleAngle -= 1.34;
+    }
+    
+    currentPosition.x += cos(currentVehicleAngle * 3.14 / 180);
+    currentPosition.y += sin(currentVehicleAngle * 3.14 / 180);
   }
-  else if(currentWheelAngle < 90) {
-    currentVehicleAngle -= 20;
+  else
+  {
+    //Marche arrière
+    if(currentWheelAngle > 90) {
+      currentVehicleAngle -= 1.34;
+    }
+    else if(currentWheelAngle < 90) {
+      currentVehicleAngle += 1.34;
+    }
+    
+    currentPosition.x -= cos(currentVehicleAngle * 3.14 / 180);
+    currentPosition.y -= sin(currentVehicleAngle * 3.14 / 180);
   }
-  
-  currentPosition.x += cos(currentVehicleAngle * 3.14 / 180);
-  currentPosition.y += sin(currentVehicleAngle * 3.14 / 180);
+
+  if(currentVehicleAngle > 360)
+    currentVehicleAngle -= 360;
+  if(currentVehicleAngle < -360)
+    currentVehicleAngle += 360;
 
 }
 
 // SETANGLE / SERVO =======================
 
 //fonction setAngle pour envoyer les impulsions
-//0 min
-//160 max
-//80 milieu
 void setAngle(int a){
   currentWheelAngle = a;
   int duree=map(a,0,179,1000,2000);// on transforme l'angle en microsecondes et on stocke dans la variable duree
